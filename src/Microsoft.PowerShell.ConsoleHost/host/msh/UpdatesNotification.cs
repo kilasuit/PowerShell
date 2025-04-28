@@ -24,6 +24,7 @@ namespace Microsoft.PowerShell
     internal static class UpdatesNotification
     {
         private const string UpdateCheckEnvVar = "POWERSHELL_UPDATECHECK";
+        private const string InstallMethodEnvVar = "POWERSHELL_INSTALLMETHOD";
         private const string LTSBuildInfoURL = "https://aka.ms/pwsh-buildinfo-lts";
         private const string StableBuildInfoURL = "https://aka.ms/pwsh-buildinfo-stable";
         private const string PreviewBuildInfoURL = "https://aka.ms/pwsh-buildinfo-preview";
@@ -48,7 +49,8 @@ namespace Microsoft.PowerShell
         private static readonly string s_cacheDirectory;
         private static readonly EnumerationOptions s_enumOptions;
         private static readonly NotificationType s_notificationType;
-
+        private static readonly InstallType s_installType;
+        
         /// <summary>
         /// Gets a value indicating whether update notification should be done.
         /// </summary>
@@ -427,6 +429,79 @@ namespace Microsoft.PowerShell
             /// Both preview and GA version 'pwsh' checks for the new LTS version only.
             /// </summary>
             LTS = 2
+        }
+
+         /// <summary>
+        /// Get the InstallMethod setting.
+        /// </summary>
+        private static InstallMethod GetInstallMethod()
+        {
+            string  = Environment.GetEnvironmentVariable(InstallMethodEnvVar);
+            if (string.IsNullOrEmpty(str))
+            {
+                return InstallType.Default;
+            }
+
+            if (Enum.TryParse(str, ignoreCase: true, out InstallType type))
+            {
+                return type;
+            }
+
+            return InstallType.Default;
+        }
+
+        private enum InstallType
+        {
+            /// <summary>
+            /// Show as is, in case the envvar is not set.
+            /// </summary>
+            Default = 0,
+
+            /// <summary>
+            /// Turn off the update notification by default for WinGet managed installs.
+            /// </summary>
+            WinGet = 1,
+
+            /// <summary>
+            /// Show update notification when installed and managed by WinGet and available in WinGet.
+            /// </summary>
+            WinGet_ShowUpdate = 1,
+
+            /// <summary>
+            /// Show custom update notification when installed or managed by WinGet e.g. you install from a custom source not the community source.
+            /// </summary>
+            WinGet_ShowCustomUpdate = 2
+
+            /// <summary>
+            /// Turn off the update Notification when installed or managed by Microsoft Update.
+            /// </summary>
+            MicrosoftUpdate = 3
+
+            /// <summary>
+            /// Show update notification when installed or managed by Microsoft Update.
+            /// </summary>
+            MicrosoftUpdate_ShowUpdate = 4
+
+            /// <summary>
+            /// Show custom update notification when installed or managed by Microsoft Update.
+            /// </summary>
+            MicrosoftUpdate_ShowCustomUpdate = 5
+
+            /// <summary>
+            /// Turn off the update Notification when installed or managed by other means like Intune, Chocolatey etc.
+            /// </summary>
+            Other = 6
+
+            /// <summary>
+            /// Show update notification when installed or managed by other means like Intune, Chocolatey etc.
+            /// </summary>
+            Other_ShowUpdate = 7
+
+            /// <summary>
+            /// Show custom update notification when installed or managed by other means other means like Intune, Chocolatey etc.
+            /// </summary>
+            Other_ShowCustomUpdate = 8
+
         }
 
         private sealed class Release
