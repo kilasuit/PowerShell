@@ -49,8 +49,8 @@ namespace Microsoft.PowerShell
         private static readonly string s_cacheDirectory;
         private static readonly EnumerationOptions s_enumOptions;
         private static readonly NotificationType s_notificationType;
-        private static readonly InstallType s_installType;
-        
+        private static readonly InstallMethod s_installMethod;
+
         /// <summary>
         /// Gets a value indicating whether update notification should be done.
         /// </summary>
@@ -59,7 +59,12 @@ namespace Microsoft.PowerShell
         static UpdatesNotification()
         {
             s_notificationType = GetNotificationType();
-            CanNotifyUpdates = s_notificationType != NotificationType.Off;
+            // If the install method is 
+            // WinGet, MicrosoftUpdate or Other, we will not show update notification by default.
+            // If the install method is WinGet_ShowUpdate, MicrosoftUpdate_ShowUpdate or Other_ShowUpdate, we will show update notification by default.
+            // If the install method is WinGet_ShowCustomUpdate, MicrosoftUpdate_ShowCustomUpdate or Other_ShowCustomUpdate, we will show custom update notification by default.
+            s_installMethod = GetInstallMethod();
+            CanNotifyUpdates = s_notificationType != NotificationType.Off && s_installMethod != InstallMethod.Default;
 
             if (CanNotifyUpdates)
             {
@@ -95,43 +100,138 @@ namespace Microsoft.PowerShell
                && lastUpdateVersion != null)
             {
                 string releaseTag = lastUpdateVersion.ToString();
-                string notificationMsgTemplate = s_notificationType == NotificationType.LTS
-                    ? ManagedEntranceStrings.LTSUpdateNotificationMessage
-                    : string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
-                        ? ManagedEntranceStrings.StableUpdateNotificationMessage
-                        : ManagedEntranceStrings.PreviewUpdateNotificationMessage;
 
-                string notificationColor = string.Empty;
-                string resetColor = string.Empty;
+                string notificationMsgTemplate;
 
-                string line2Padding = string.Empty;
-                string line3Padding = string.Empty;
-
-                // We calculate how much whitespace we need to make it look nice
-                if (hostUI.SupportsVirtualTerminal)
+                if (s_notificationType == NotificationType.LTS && s_installMethod == InstallMethod.Default)
                 {
-                    // Swaps foreground and background colors.
-                    notificationColor = "\x1B[7m";
-                    resetColor = "\x1B[0m";
-
-                    // The first line is longest, if the message changes, this needs to be updated
-                    int line1Length = notificationMsgTemplate.IndexOf('\n');
-                    int line2Length = notificationMsgTemplate.IndexOf('\n', line1Length + 1);
-                    int line3Length = notificationMsgTemplate.IndexOf('\n', line2Length + 1);
-                    line3Length -= line2Length + 1;
-                    line2Length -= line1Length + 1;
-
-                    line2Padding = line2Padding.PadRight(line1Length - line2Length + releaseTag.Length);
-                    // 3 represents the extra placeholder in the template
-                    line3Padding = line3Padding.PadRight(line1Length - line3Length + 3);
+                    notificationMsgTemplate = ManagedEntranceStrings.LTSUpdateNotificationMessage;
+                }
+                else if (s_notificationType == NotificationType.LTS && s_installMethod == InstallMethod.WinGet_ShowUpdate)
+                {
+                    notificationMsgTemplate = ManagedEntranceStrings.LTSUpdateWinGetNotificationMessage;
+                }
+                else if (s_notificationType == NotificationType.Default && s_installMethod == InstallMethod.Default)
+                {
+                    notificationMsgTemplate = ManagedEntranceStrings.StableUpdateNotificationMessage;
+                }
+                else if (s_notificationType == NotificationType.Default && s_installMethod == InstallMethod.WinGet_ShowUpdate)
+                {
+                    notificationMsgTemplate = ManagedEntranceStrings.StableUpdateWinGetNotificationMessage;
+                }
+                else if (s_notificationType == NotificationType.Off)
+                {
+                    notificationMsgTemplate = null;
+                }
+                else if (string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel))
+                {
+                    notificationMsgTemplate = ManagedEntranceStrings.StableUpdateNotificationMessage;
+                }
+                else
+                {
+                    notificationMsgTemplate = ManagedEntranceStrings.PreviewUpdateNotificationMessage;
                 }
 
-                string notificationMsg = string.Format(CultureInfo.CurrentCulture, notificationMsgTemplate, releaseTag, notificationColor, resetColor, line2Padding, line3Padding);
+                // string notificationMsgTemplate = s_installMethod == InstallMethod.Default && s_notificationType == NotificationType.LTS
+                //     ? ManagedEntranceStrings.LTSUpdateNotificationMessage
+                //     : string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+                //         ? ManagedEntranceStrings.StableUpdateNotificationMessage
+                //         : ManagedEntranceStrings.PreviewUpdateNotificationMessage;
+                //             ? s_installMethod == InstallMethod.WinGet_ShowUpdate && s_notificationType == NotificationType.LTS
+                //             ? ManagedEntranceStrings.LTSUpdateWinGetNotificationMessage
+                //             : string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+                //                 ? ManagedEntranceStrings.StableUpdateWinGetNotificationMessage
+                //                 : ManagedEntranceStrings.PreviewUpdateWinGetNotificationMessage;
+//            }
+            // else (s_installMethod == InstallMethod.WinGet_ShowUpdate)
+            // {
+            // If WinGet show customUpdate Message - Not Yet Implemented
+            // case (InstallMethod.WinGet_ShowCustomUpdate):
+            //     {
+            //         string notificationMsgTemplate = s_notificationType == NotificationType.LTS
+            //          ? ManagedEntranceStrings.LTSUpdateWinGetCustomNotificationMessage
+            //          :string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+            //             ? ManagedEntranceStrings.StableUpdateWinGetCustomNotificationMessage
+            //             : ManagedEntranceStrings.PreviewUpdateWinGetCustomNotificationMessage;
+            //         break;
+            //     }
 
-                hostUI.WriteLine();
-                hostUI.WriteLine(notificationMsg);
+            // If MicrosoftUpdate show update message
+            // case (InstallMethod.MicrosoftUpdate_ShowUpdate):
+            //     {
+            //         string notificationMsgTemplate = s_notificationType == NotificationType.LTS
+            //          ? ManagedEntranceStrings.LTSUpdateNotificationMessage
+            //          :string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+            //             ? ManagedEntranceStrings.StableUpdateCustomNotificationMessage
+            //             : ManagedEntranceStrings.PreviewUpdateCustomNotificationMessage;
+            //         break;
+            //     }
+
+            // If MicrosoftUpdate show Custom update message
+            // case (InstallMethod.MicrosoftUpdate_ShowUpdate, NotificationType.Default):
+            //     {
+            //         string notificationMsgTemplate = s_notificationType == NotificationType.LTS
+            //          ? ManagedEntranceStrings.LTSUpdateNotificationMessage
+            //          :string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+            //             ? ManagedEntranceStrings.StableUpdateCustomNotificationMessage
+            //             : ManagedEntranceStrings.PreviewUpdateCustomNotificationMessage;
+            //         break;
+            //     }
+
+            // If MicrosoftUpdate show Custom update message
+            // case (InstallMethod.MicrosoftUpdate_ShowUpdate, NotificationType.Default):
+            //     {
+            //         string notificationMsgTemplate = s_notificationType == NotificationType.LTS
+            //          ? ManagedEntranceStrings.LTSUpdateNotificationMessage
+            //          :string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+            //             ? ManagedEntranceStrings.StableUpdateCustomNotificationMessage
+            //             : ManagedEntranceStrings.PreviewUpdateCustomNotificationMessage;
+            //         break;
+            //     }
+
+            // If MicrosoftUpdate show Custom update message
+            // case (InstallMethod.MicrosoftUpdate_ShowUpdate, NotificationType.Default):
+            //     {
+            //         string notificationMsgTemplate = s_notificationType == NotificationType.LTS
+            //          ? ManagedEntranceStrings.LTSUpdateNotificationMessage
+            //          :string.IsNullOrEmpty(lastUpdateVersion.PreReleaseLabel)
+            //             ? ManagedEntranceStrings.StableUpdateCustomNotificationMessage
+            //             : ManagedEntranceStrings.PreviewUpdateCustomNotificationMessage;
+            //         break;
+            //     }
+            //};
+
+            string notificationColor = string.Empty;
+            string resetColor = string.Empty;
+
+            string line2Padding = string.Empty;
+            string line3Padding = string.Empty;
+
+            // We calculate how much whitespace we need to make it look nice
+            if (hostUI.SupportsVirtualTerminal)
+            {
+                // Swaps foreground and background colors.
+                notificationColor = "\x1B[7m";
+                resetColor = "\x1B[0m";
+
+                // The first line is longest, if the message changes, this needs to be updated
+                int line1Length = notificationMsgTemplate.IndexOf('\n');
+                int line2Length = notificationMsgTemplate.IndexOf('\n', line1Length + 1);
+                int line3Length = notificationMsgTemplate.IndexOf('\n', line2Length + 1);
+                line3Length -= line2Length + 1;
+                line2Length -= line1Length + 1;
+
+                line2Padding = line2Padding.PadRight(line1Length - line2Length + releaseTag.Length);
+                // 3 represents the extra placeholder in the template
+                line3Padding = line3Padding.PadRight(line1Length - line3Length + 3);
             }
+
+            string notificationMsg = string.Format(CultureInfo.CurrentCulture, notificationMsgTemplate, releaseTag, notificationColor, resetColor, line2Padding, line3Padding);
+
+            hostUI.WriteLine();
+            hostUI.WriteLine(notificationMsg);
         }
+    }
 
         internal static async Task CheckForUpdates()
         {
@@ -412,115 +512,115 @@ namespace Microsoft.PowerShell
         /// Notification type that can be configured.
         /// </summary>
         private enum NotificationType
-        {
-            /// <summary>
-            /// Turn off the update notification.
-            /// </summary>
-            Off = 0,
-
-            /// <summary>
-            /// Give you the default behaviors:
-            ///  - the preview version 'pwsh' checks for the new preview version and the new GA version.
-            ///  - the GA version 'pwsh' checks for the new GA version only.
-            /// </summary>
-            Default = 1,
-
-            /// <summary>
-            /// Both preview and GA version 'pwsh' checks for the new LTS version only.
-            /// </summary>
-            LTS = 2
-        }
-
-         /// <summary>
-        /// Get the InstallMethod setting.
+    {
+        /// <summary>
+        /// Turn off the update notification.
         /// </summary>
-        private static InstallMethod GetInstallMethod()
-        {
-            string  = Environment.GetEnvironmentVariable(InstallMethodEnvVar);
-            if (string.IsNullOrEmpty(str))
-            {
-                return InstallType.Default;
-            }
+        Off = 0,
 
-            if (Enum.TryParse(str, ignoreCase: true, out InstallType type))
-            {
-                return type;
-            }
+        /// <summary>
+        /// Give you the default behaviors:
+        ///  - the preview version 'pwsh' checks for the new preview version and the new GA version.
+        ///  - the GA version 'pwsh' checks for the new GA version only.
+        /// </summary>
+        Default = 1,
 
-            return InstallType.Default;
-        }
-
-        private enum InstallType
-        {
-            /// <summary>
-            /// Show as is, in case the envvar is not set.
-            /// </summary>
-            Default = 0,
-
-            /// <summary>
-            /// Turn off the update notification by default for WinGet managed installs.
-            /// </summary>
-            WinGet = 1,
-
-            /// <summary>
-            /// Show update notification when installed and managed by WinGet and available in WinGet.
-            /// </summary>
-            WinGet_ShowUpdate = 1,
-
-            /// <summary>
-            /// Show custom update notification when installed or managed by WinGet e.g. you install from a custom source not the community source.
-            /// </summary>
-            WinGet_ShowCustomUpdate = 2
-
-            /// <summary>
-            /// Turn off the update Notification when installed or managed by Microsoft Update.
-            /// </summary>
-            MicrosoftUpdate = 3
-
-            /// <summary>
-            /// Show update notification when installed or managed by Microsoft Update.
-            /// </summary>
-            MicrosoftUpdate_ShowUpdate = 4
-
-            /// <summary>
-            /// Show custom update notification when installed or managed by Microsoft Update.
-            /// </summary>
-            MicrosoftUpdate_ShowCustomUpdate = 5
-
-            /// <summary>
-            /// Turn off the update Notification when installed or managed by other means like Intune, Chocolatey etc.
-            /// </summary>
-            Other = 6
-
-            /// <summary>
-            /// Show update notification when installed or managed by other means like Intune, Chocolatey etc.
-            /// </summary>
-            Other_ShowUpdate = 7
-
-            /// <summary>
-            /// Show custom update notification when installed or managed by other means other means like Intune, Chocolatey etc.
-            /// </summary>
-            Other_ShowCustomUpdate = 8
-
-        }
-
-        private sealed class Release
-        {
-            internal Release(string publishAt, string tagName)
-            {
-                PublishAt = publishAt;
-                TagName = tagName;
-            }
-
-            /// <summary>
-            /// The datetime stamp is in UTC. For example: 2019-03-28T18:42:02Z.
-            /// </summary>
-            internal string PublishAt { get; }
-
-            /// <summary>
-            /// The release tag name.
-            /// </summary>
-            internal string TagName { get; }
-        }
+        /// <summary>
+        /// Both preview and GA version 'pwsh' checks for the new LTS version only.
+        /// </summary>
+        LTS = 2
     }
+
+    /// <summary>
+    /// Get the InstallMethod setting.
+    /// </summary>
+    private static InstallMethod GetInstallMethod()
+    {
+        string str = Environment.GetEnvironmentVariable(InstallMethodEnvVar);
+        if (string.IsNullOrEmpty(str))
+        {
+            return InstallMethod.Default;
+        }
+
+        if (Enum.TryParse(str, ignoreCase: true, out InstallMethod type))
+        {
+            return type;
+        }
+
+        return InstallMethod.Default;
+    }
+
+    private enum InstallMethod
+    {
+        /// <summary>
+        /// Show as is, in case the envvar is not set.
+        /// </summary>
+        Default = 0,
+
+        /// <summary>
+        /// Turn off the update notification by default for WinGet managed installs.
+        /// </summary>
+        WinGet = 1,
+
+        /// <summary>
+        /// Show update notification when installed and managed by WinGet and available in WinGet.
+        /// </summary>
+        WinGet_ShowUpdate = 1,
+
+        /// <summary>
+        /// Show custom update notification when installed or managed by WinGet e.g. you install from a custom source not the community source.
+        /// </summary>
+        WinGet_ShowCustomUpdate = 2,
+
+        /// <summary>
+        /// Turn off the update Notification when installed or managed by Microsoft Update.
+        /// </summary>
+        MicrosoftUpdate = 3,
+
+        /// <summary>
+        /// Show update notification when installed or managed by Microsoft Update.
+        /// </summary>
+        MicrosoftUpdate_ShowUpdate = 4,
+
+        /// <summary>
+        /// Show custom update notification when installed or managed by Microsoft Update.
+        /// </summary>
+        MicrosoftUpdate_ShowCustomUpdate = 5,
+
+        /// <summary>
+        /// Turn off the update Notification when installed or managed by other means like Intune, Chocolatey etc.
+        /// </summary>
+        Other = 6,
+
+        /// <summary>
+        /// Show update notification when installed or managed by other means like Intune, Chocolatey etc.
+        /// </summary>
+        Other_ShowUpdate = 7,
+
+        /// <summary>
+        /// Show custom update notification when installed or managed by other means other means like Intune, Chocolatey etc.
+        /// </summary>
+        Other_ShowCustomUpdate = 8,
+
+    }
+
+    private sealed class Release
+    {
+        internal Release(string publishAt, string tagName)
+        {
+            PublishAt = publishAt;
+            TagName = tagName;
+        }
+
+        /// <summary>
+        /// The datetime stamp is in UTC. For example: 2019-03-28T18:42:02Z.
+        /// </summary>
+        internal string PublishAt { get; }
+
+        /// <summary>
+        /// The release tag name.
+        /// </summary>
+        internal string TagName { get; }
+    }
+}
 }
