@@ -377,11 +377,11 @@ namespace System.Management.Automation
                                RunspaceInit.EnabledExperimentalFeatures);
             this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
 
-            // $PSProcessPath
-            v = new PSVariable(SpecialVariables.PSProcessPath,
+            // $pp
+            v = new PSVariable(SpecialVariables.pp,
                                Environment.ProcessPath,
                                ScopedItemOptions.Constant | ScopedItemOptions.AllScope,
-                               RunspaceInit.PSProcessPathDescription);
+                               RunspaceInit.ppDescription);
             this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
         }
 

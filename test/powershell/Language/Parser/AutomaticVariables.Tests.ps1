@@ -21,29 +21,29 @@ Describe 'Automatic variable $input' -Tags "CI" {
     }
 }
 
-Describe 'Automatic variable $PSProcessPath' -Tags "CI" {
-    It '$PSProcessPath should return a non-empty string' {
-        $PSProcessPath | Should -Not -BeNullOrEmpty
+Describe 'Automatic variable $pp' -Tags "CI" {
+    It '$pp should return a non-empty string' {
+        $pp | Should -Not -BeNullOrEmpty
     }
 
-    It '$PSProcessPath should be a string' {
-        $PSProcessPath | Should -BeOfType [string]
+    It '$pp should be a string' {
+        $pp | Should -BeOfType [string]
     }
 
-    It '$PSProcessPath should point to an existing file' {
-        Test-Path -LiteralPath $PSProcessPath -PathType Leaf | Should -BeTrue
+    It '$pp should point to an existing file' {
+        Test-Path -LiteralPath $pp -PathType Leaf | Should -BeTrue
     }
 
-    It '$PSProcessPath should be a constant variable' {
-        $var = Get-Variable -Name PSProcessPath
+    It '$pp should be a constant variable' {
+        $var = Get-Variable -Name pp
         $var.Options | Should -Match 'Constant'
     }
 
-    It '$PSProcessPath should be read-only (cannot be overwritten)' {
-        { $PSProcessPath = 'something' } | Should -Throw
+    It '$pp should be read-only (cannot be overwritten)' {
+        { $pp = 'something' } | Should -Throw
     }
 
-    It '$PSProcessPath should match the current process path' {
-        $PSProcessPath | Should -Be ([System.Environment]::ProcessPath)
+    It '$pp should match the current process path' {
+        $pp | Should -Be ([System.Environment]::ProcessPath)
     }
 }
