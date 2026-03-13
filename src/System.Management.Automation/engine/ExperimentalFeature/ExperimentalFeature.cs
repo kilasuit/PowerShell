@@ -22,6 +22,7 @@ namespace System.Management.Automation
         internal const string EngineSource = "PSEngine";
         internal const string PSSerializeJSONLongEnumAsNumber = nameof(PSSerializeJSONLongEnumAsNumber);
         internal const string PSProfileDSCResource = "PSProfileDSCResource";
+        internal const string PSProcessPathAutomaticVariable = "PSProcessPathAutomaticVariable";
 
         #endregion
 
@@ -114,6 +115,10 @@ namespace System.Management.Automation
                 new ExperimentalFeature(
                     name: PSProfileDSCResource,
                     description: "DSC v3 resources for managing PowerShell profile."
+                ),
+                new ExperimentalFeature(
+                    name: PSProcessPathAutomaticVariable,
+                    description: "Adds the $PSProcessPath automatic variable containing the path to the current PowerShell process executable."
                 )
             };
 
