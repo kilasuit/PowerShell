@@ -377,12 +377,15 @@ namespace System.Management.Automation
                                RunspaceInit.EnabledExperimentalFeatures);
             this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
 
-            // $PSProcessPath
-            v = new PSVariable(SpecialVariables.PSProcessPath,
-                               Environment.ProcessPath,
-                               ScopedItemOptions.Constant | ScopedItemOptions.AllScope,
-                               RunspaceInit.PSProcessPathDescription);
-            this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
+            // $PSProcessPath - only registered when the experimental feature is enabled
+            if (ExperimentalFeature.IsEnabled(ExperimentalFeature.PSProcessPath))
+            {
+                v = new PSVariable(SpecialVariables.PSProcessPath,
+                                   Environment.ProcessPath,
+                                   ScopedItemOptions.Constant | ScopedItemOptions.AllScope,
+                                   RunspaceInit.PSProcessPathDescription);
+                this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
+            }
         }
 
         /// <summary>

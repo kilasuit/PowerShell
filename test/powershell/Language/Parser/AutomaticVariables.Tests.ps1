@@ -22,28 +22,71 @@ Describe 'Automatic variable $input' -Tags "CI" {
 }
 
 Describe 'Automatic variable $PSProcessPath' -Tags "CI" {
+    BeforeAll {
+        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPath')
+        $script:psProcessPathSkipMessage = "The experimental feature 'PSProcessPath' must be enabled to use `$PSProcessPath."
+    }
+
     It '$PSProcessPath should return a non-empty string' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         $PSProcessPath | Should -Not -BeNullOrEmpty
     }
 
     It '$PSProcessPath should be a string' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         $PSProcessPath | Should -BeOfType [string]
     }
 
     It '$PSProcessPath should point to an existing file' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         Test-Path -LiteralPath $PSProcessPath -PathType Leaf | Should -BeTrue
     }
 
     It '$PSProcessPath should be a constant variable' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         $var = Get-Variable -Name PSProcessPath
         $var.Options | Should -Match 'Constant'
     }
 
     It '$PSProcessPath should be read-only (cannot be overwritten)' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         { $PSProcessPath = 'something' } | Should -Throw
     }
 
     It '$PSProcessPath should match the current process path' {
+        if (-not $script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because $script:psProcessPathSkipMessage
+            return
+        }
         $PSProcessPath | Should -Be ([System.Environment]::ProcessPath)
+    }
+}
+
+Describe 'Automatic variable $PSProcessPath - feature disabled' -Tags "CI" {
+    BeforeAll {
+        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPath')
+    }
+
+    It '$PSProcessPath should not exist when experimental feature is disabled' {
+        if ($script:psProcessPathFeatureEnabled) {
+            Set-ItResult -Skipped -Because "The experimental feature 'PSProcessPath' is enabled; test requires the feature to be disabled."
+            return
+        }
+        { Get-Variable -Name PSProcessPath -ErrorAction Stop } | Should -Throw
     }
 }
