@@ -378,7 +378,7 @@ namespace System.Management.Automation
             this.GlobalScope.SetVariable(v.Name, v, asValue: false, force: true, this, CommandOrigin.Internal, fastPath: true);
 
             // $PSProcessPath - only registered when the experimental feature is enabled
-            if (ExperimentalFeature.IsEnabled(ExperimentalFeature.PSProcessPath))
+            if (ExperimentalFeature.IsEnabled(ExperimentalFeature.PSProcessPathAutomaticVariable))
             {
                 v = new PSVariable(SpecialVariables.PSProcessPath,
                                    Environment.ProcessPath,

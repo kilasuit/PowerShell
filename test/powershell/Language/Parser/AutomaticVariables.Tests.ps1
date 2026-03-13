@@ -23,8 +23,8 @@ Describe 'Automatic variable $input' -Tags "CI" {
 
 Describe 'Automatic variable $PSProcessPath' -Tags "CI" {
     BeforeAll {
-        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPath')
-        $script:psProcessPathSkipMessage = "The experimental feature 'PSProcessPath' must be enabled to use `$PSProcessPath."
+        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPathAutomaticVariable')
+        $script:psProcessPathSkipMessage = "The experimental feature 'PSProcessPathAutomaticVariable' must be enabled to use `$PSProcessPath."
     }
 
     It '$PSProcessPath should return a non-empty string' {
@@ -79,12 +79,12 @@ Describe 'Automatic variable $PSProcessPath' -Tags "CI" {
 
 Describe 'Automatic variable $PSProcessPath - feature disabled' -Tags "CI" {
     BeforeAll {
-        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPath')
+        $script:psProcessPathFeatureEnabled = $EnabledExperimentalFeatures.Contains('PSProcessPathAutomaticVariable')
     }
 
     It '$PSProcessPath should not exist when experimental feature is disabled' {
         if ($script:psProcessPathFeatureEnabled) {
-            Set-ItResult -Skipped -Because "The experimental feature 'PSProcessPath' is enabled; test requires the feature to be disabled."
+            Set-ItResult -Skipped -Because "The experimental feature 'PSProcessPathAutomaticVariable' is enabled; test requires the feature to be disabled."
             return
         }
         { Get-Variable -Name PSProcessPath -ErrorAction Stop } | Should -Throw
