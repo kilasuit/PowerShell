@@ -303,6 +303,8 @@ namespace System.Management.Automation
             /*               Hidden */ PSTokenType.Keyword,
             /*                 Base */ PSTokenType.Keyword,
             /*              Default */ PSTokenType.Keyword,
+            /*                Clean */ PSTokenType.Keyword,
+            /*     AmpersandExclaim */ PSTokenType.Operator,
 
             #endregion Flags for keywords
 
