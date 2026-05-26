@@ -41,10 +41,12 @@
   <?endif?>
   <!-- Explorer context submenu entries. The ampersand denotes the keyboard shortcut. -->
   <?define ExplorerContextSubMenuDialogText = "Open &here"?>
+  <?define ExplorerContextSubMenuConhostDialogText = "Open here in C&onhost"?>
   <?define ExplorerContextSubMenuTerminalDialogText = "Open here in &Terminal"?>
   <?define ExplorerContextSubMenuNoProfileDialogText = "Open here with &No Profile"?>
   <?define ExplorerContextSubMenuCustomProfileDialogText = "Open here with C&ustom Profile"?>
   <?define ExplorerContextSubMenuElevatedDialogText = "Open here as &Administrator"?>
+  <?define ExplorerContextSubMenuConhostElevatedDialogText = "Open here in Conhost as Adminis&trator"?>
   <?define ExplorerContextSubMenuTerminalElevatedDialogText = "Open here in Terminal as A&dministrator"?>
   <?define ExplorerContextSubMenuNoProfileElevatedDialogText = "Open here with No Profile as Adm&inistrator"?>
   <?define ExplorerContextSubMenuCustomProfileElevatedDialogText = "Open here with Custom Profile as Admi&nistrator"?>
@@ -463,6 +465,13 @@
               <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openpwsh\command">
                 <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
               </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openconhost">
+                <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuConhostDialogText)"/>
+                <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openconhost\command">
+                <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
+              </RegistryKey>
               <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openterminal">
                 <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuTerminalDialogText)"/>
                 <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
@@ -488,6 +497,14 @@
                 <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuTerminalElevatedDialogText)"/>
                 <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
                 <RegistryValue Type="string" Value="" Name="HasLUAShield"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\runasconhost">
+                <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuConhostElevatedDialogText)"/>
+                <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
+                <RegistryValue Type="string" Value="" Name="HasLUAShield"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\runasconhost\command">
+                <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
               </RegistryKey>
               <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\runasterminal\command">
                 <RegistryValue Type="string" Value="wt.exe -d &quot;%V!&quot; &quot;[VersionFolder]pwsh.exe&quot; -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>

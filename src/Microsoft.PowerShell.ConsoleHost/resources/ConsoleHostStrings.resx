@@ -182,6 +182,9 @@ The current session does not support debugging; execution will continue.
   <data name="RunAsAdministrator" xml:space="preserve">
     <value>Run as Administrator</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
   <data name="OpenInConhost" xml:space="preserve">
     <value>Open in Conhost</value>
   </data>
@@ -193,6 +196,9 @@ The current session does not support debugging; execution will continue.
   </data>
   <data name="OpenWithCustomProfile" xml:space="preserve">
     <value>Open with Custom Profile</value>
+  </data>
+  <data name="OpenAsAdministrator" xml:space="preserve">
+    <value>Open as Administrator</value>
   </data>
   <data name="OpenInConhostAsAdministrator" xml:space="preserve">
     <value>Open in Conhost as Administrator</value>
