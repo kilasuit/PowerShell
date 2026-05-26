@@ -124,6 +124,7 @@ namespace Microsoft.PowerShell
                             break;
                         }
 
+                        // Filter both elevated and non-elevated Terminal entries when wt.exe is unavailable.
                         if (entry.ExecutablePath == terminalPath && !File.Exists(entry.ExecutablePath))
                         {
                             continue;
