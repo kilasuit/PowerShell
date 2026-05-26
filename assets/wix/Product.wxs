@@ -40,7 +40,10 @@
     <?endif?>
   <?endif?>
   <!-- Explorer context submenu entries. The ampersand denotes the keyboard shortcut. -->
-  <?define ExplorerContextSubMenuDialogText = "Open &here"?>
+  <?define ExplorerContextSubMenuDialogText = "Open here in &Conhost"?>
+  <?define ExplorerContextSubMenuTerminalDialogText = "Open here in &Terminal"?>
+  <?define ExplorerContextSubMenuNoProfileDialogText = "Open here with &No Profile"?>
+  <?define ExplorerContextSubMenuCustomProfileDialogText = "Open here with C&ustom Profile"?>
   <?define ExplorerContextSubMenuElevatedDialogText = "Open here as &Administrator"?>
   <!-- ps1 context submenu entries. -->
   <?define PowerShellFileContextSubMenuDialogText = "Run with $(var.ProductName) $(var.SimpleProductVersion)"?>
@@ -415,7 +418,7 @@
                 <RegistryValue Type="string" Name="InstallDir" Value="[VersionFolder]" KeyPath="yes"/>
               </RegistryKey>
             </Component>
-            <!-- Explorer context menu with 2 submenus to open PowerShell normally or as an Administrator.
+            <!-- Explorer context menu with submenus to open PowerShell in multiple launch modes.
                  See https://blogs.msdn.microsoft.com/andrew_richards/2017/03/01/enhancing-the-open-command-prompt-here-shift-right-click-context-menu-experience/ for details -->
             <Component Id="ExplorerContextMenu">
               <Condition>ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1</Condition>
@@ -456,6 +459,27 @@
               </RegistryKey>
               <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openpwsh\command">
                 <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openterminal">
+                <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuTerminalDialogText)"/>
+                <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\openterminal\command">
+                <RegistryValue Type="string" Value="wt.exe -d &quot;%V!&quot; &quot;[VersionFolder]pwsh.exe&quot; -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\opennoprofile">
+                <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuNoProfileDialogText)"/>
+                <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\opennoprofile\command">
+                <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoProfile -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;$host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\opencustomprofile">
+                <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuCustomProfileDialogText)"/>
+                <RegistryValue Type="string" Name="Icon" Value="[VersionFolder]pwsh.exe"/>
+              </RegistryKey>
+              <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\opencustomprofile\command">
+                <RegistryValue Type="string" Value="[VersionFolder]pwsh.exe -NoProfile -NoExit -RemoveWorkingDirectoryTrailingCharacter -WorkingDirectory &quot;%V!&quot; -Command &quot;if (Test-Path $PROFILE.CurrentUserCurrentHost) { . $PROFILE.CurrentUserCurrentHost }; $host.UI.RawUI.WindowTitle = '$(var.ProductName) $(var.SimpleProductVersion) ($(sys.BUILDARCH))'&quot;"/>
               </RegistryKey>
               <RegistryKey Root="HKCR" Key="Directory\ContextMenus\$(var.ProductName)$(var.SimpleProductVersion)$(sys.BUILDARCH)\shell\runas">
                 <RegistryValue Type="string" Name="MUIVerb" Value="$(var.ExplorerContextSubMenuElevatedDialogText)"/>

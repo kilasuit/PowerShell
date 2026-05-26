@@ -18,6 +18,22 @@ Describe "Windows Installer" -Tags "Scenario" {
         (Get-Content $wixProductFile -Raw).Contains($preRequisitesLink) | Should -BeTrue
     }
 
+    It "WiX file contains extended Explorer context menu launch options" -Skip:$skipTest {
+        $wixProductFile = Join-Path -Path $PSScriptRoot -ChildPath "..\..\..\assets\wix\Product.wxs"
+        $content = Get-Content $wixProductFile -Raw
+
+        $content.Contains('ExplorerContextSubMenuDialogText = "Open here in &Conhost"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuTerminalDialogText = "Open here in &Terminal"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuNoProfileDialogText = "Open here with &No Profile"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuCustomProfileDialogText = "Open here with C&ustom Profile"') | Should -BeTrue
+        $content.Contains('\shell\openterminal\command') | Should -BeTrue
+        $content.Contains('\shell\opennoprofile\command') | Should -BeTrue
+        $content.Contains('\shell\opencustomprofile\command') | Should -BeTrue
+        $content.Contains('wt.exe -d') | Should -BeTrue
+        $content.Contains('-NoProfile -NoExit') | Should -BeTrue
+        $content.Contains('$PROFILE.CurrentUserCurrentHost') | Should -BeTrue
+    }
+
     ## Running 'Invoke-WebRequest' with WMF download URLs has been failing intermittently,
     ## because sometimes the URLs lead to a 'this download is no longer available' page.
     ## We use a retry logic here. Retry for 5 times with 1 second interval.

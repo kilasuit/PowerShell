@@ -182,6 +182,18 @@ The current session does not support debugging; execution will continue.
   <data name="RunAsAdministrator" xml:space="preserve">
     <value>Run as Administrator</value>
   </data>
+  <data name="OpenInConhost" xml:space="preserve">
+    <value>Open in Conhost</value>
+  </data>
+  <data name="OpenInTerminal" xml:space="preserve">
+    <value>Open in Terminal</value>
+  </data>
+  <data name="OpenWithNoProfile" xml:space="preserve">
+    <value>Open with No Profile</value>
+  </data>
+  <data name="OpenWithCustomProfile" xml:space="preserve">
+    <value>Open with Custom Profile</value>
+  </data>
   <data name="PushRunspaceNotRemote" xml:space="preserve">
     <value>PushRunspace can only push a remote runspace.</value>
   </data>

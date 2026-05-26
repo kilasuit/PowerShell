@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Management.Automation;
 using System.Reflection;
 using System.Threading;
@@ -33,7 +34,7 @@ namespace Microsoft.PowerShell
             {
                 try
                 {
-                    CreateElevatedEntry(ConsoleHostStrings.RunAsAdministrator);
+                    CreateEntries();
                 }
                 catch (Exception)
                 {
@@ -53,7 +54,7 @@ namespace Microsoft.PowerShell
             }
         }
 
-        private static void CreateElevatedEntry(string title)
+        private static void CreateEntries()
         {
             // Check startupInfo first to know if the current shell is interactive and owns a window before proceeding
             // This check is fast (less than 1ms) and allows for quick-exit
@@ -63,6 +64,11 @@ namespace Microsoft.PowerShell
             if (((startupInfo.dwFlags & STARTF_USESHOWWINDOW) == 1) && (startupInfo.wShowWindow != SW_HIDE))
             {
                 string cmdPath = Assembly.GetEntryAssembly().Location.Replace(".dll", ".exe");
+                string terminalPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Microsoft",
+                    "WindowsApps",
+                    "wt.exe");
 
                 // Check for maximum available slots in JumpList and start creating the custom Destination List
                 var CLSID_DestinationList = new Guid(@"77f10cf0-3db5-4966-b520-b7c54fd35ed6");
@@ -85,33 +91,6 @@ namespace Microsoft.PowerShell
 
                 if (uMaxSlots >= 1)
                 {
-                    // Create JumpListLink
-                    var nativeShellLink = (IShellLinkW)new CShellLink();
-                    var nativePropertyStore = (IPropertyStore)nativeShellLink;
-                    nativeShellLink.SetPath(cmdPath);
-                    nativeShellLink.SetShowCmd(0);
-                    var shellLinkDataList = (IShellLinkDataListW)nativeShellLink;
-                    shellLinkDataList.GetFlags(out uint flags);
-                    flags |= 0x00800000; // SLDF_ALLOW_LINK_TO_LINK
-                    flags |= 0x00002000; // SLDF_RUNAS_USER
-                    shellLinkDataList.SetFlags(flags);
-                    var PKEY_TITLE = new PropertyKey(new Guid("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}"), 2);
-                    hResult = nativePropertyStore.SetValue(in PKEY_TITLE, new PropVariant(title));
-                    if (hResult < 0)
-                    {
-                        pCustDestList.AbortList();
-                        Debug.Fail($"SetValue on IPropertyStore with title '{title}' failed with HResult '{hResult}'.");
-                        return;
-                    }
-
-                    hResult = nativePropertyStore.Commit();
-                    if (hResult < 0)
-                    {
-                        pCustDestList.AbortList();
-                        Debug.Fail($"Commit on IPropertyStore failed with HResult '{hResult}'.");
-                        return;
-                    }
-
                     // Create collection and add JumpListLink
                     var CLSID_EnumerableObjectCollection = new Guid(@"2d3468c1-36a7-43b6-ac24-d3f02fd9607a");
                     const uint CLSCTX_INPROC_HANDLER = 2;
@@ -125,7 +104,44 @@ namespace Microsoft.PowerShell
                     }
 
                     var pShortCutCollection = (IObjectCollection)instance;
-                    pShortCutCollection.AddObject((IShellLinkW)nativePropertyStore);
+                    var entries = new (string Title, string ExecutablePath, string Arguments, bool RunAsAdministrator)[]
+                    {
+                        (ConsoleHostStrings.OpenInConhost, cmdPath, string.Empty, false),
+                        (ConsoleHostStrings.OpenInTerminal, terminalPath, $"-w 0 nt \"{cmdPath}\"", false),
+                        (ConsoleHostStrings.OpenWithNoProfile, cmdPath, "-NoProfile", false),
+                        (ConsoleHostStrings.OpenWithCustomProfile, cmdPath, "-NoProfile -Command \"if (Test-Path $PROFILE.CurrentUserCurrentHost) { . $PROFILE.CurrentUserCurrentHost }\"", false),
+                        (ConsoleHostStrings.RunAsAdministrator, cmdPath, string.Empty, true),
+                    };
+
+                    uint addedEntries = 0;
+                    foreach (var entry in entries)
+                    {
+                        if (addedEntries >= uMaxSlots)
+                        {
+                            break;
+                        }
+
+                        if (entry.Title == ConsoleHostStrings.OpenInTerminal && !File.Exists(entry.ExecutablePath))
+                        {
+                            continue;
+                        }
+
+                        if (!TryCreateJumpListLink(entry.ExecutablePath, entry.Arguments, entry.Title, entry.RunAsAdministrator, out IShellLinkW jumpListLink, out string errorMessage))
+                        {
+                            pCustDestList.AbortList();
+                            Debug.Fail(errorMessage);
+                            return;
+                        }
+
+                        pShortCutCollection.AddObject(jumpListLink);
+                        addedEntries++;
+                    }
+
+                    if (addedEntries == 0)
+                    {
+                        pCustDestList.AbortList();
+                        return;
+                    }
 
                     // Add collection to custom destination list and commit the result
                     hResult = pCustDestList.AddUserTasks((IObjectArray)pShortCutCollection);
@@ -139,6 +155,42 @@ namespace Microsoft.PowerShell
                     pCustDestList.CommitList();
                 }
             }
+        }
+
+        private static bool TryCreateJumpListLink(string executablePath, string arguments, string title, bool runAsAdministrator, out IShellLinkW jumpListLink, out string errorMessage)
+        {
+            jumpListLink = (IShellLinkW)new CShellLink();
+            var nativePropertyStore = (IPropertyStore)jumpListLink;
+            jumpListLink.SetPath(executablePath);
+            jumpListLink.SetArguments(arguments);
+            jumpListLink.SetShowCmd(0);
+
+            if (runAsAdministrator)
+            {
+                var shellLinkDataList = (IShellLinkDataListW)jumpListLink;
+                shellLinkDataList.GetFlags(out uint flags);
+                flags |= 0x00800000; // SLDF_ALLOW_LINK_TO_LINK
+                flags |= 0x00002000; // SLDF_RUNAS_USER
+                shellLinkDataList.SetFlags(flags);
+            }
+
+            var pkeyTitle = new PropertyKey(new Guid("{F29F85E0-4FF9-1068-AB91-08002B27B3D9}"), 2);
+            var hResult = nativePropertyStore.SetValue(in pkeyTitle, new PropVariant(title));
+            if (hResult < 0)
+            {
+                errorMessage = $"SetValue on IPropertyStore with title '{title}' failed with HResult '{hResult}'.";
+                return false;
+            }
+
+            hResult = nativePropertyStore.Commit();
+            if (hResult < 0)
+            {
+                errorMessage = $"Commit on IPropertyStore with title '{title}' failed with HResult '{hResult}'.";
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
     }
 }
