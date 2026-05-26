@@ -22,13 +22,19 @@ Describe "Windows Installer" -Tags "Scenario" {
         $wixProductFile = Join-Path -Path $PSScriptRoot -ChildPath "..\..\..\assets\wix\Product.wxs"
         $content = Get-Content $wixProductFile -Raw
 
-        $content.Contains('ExplorerContextSubMenuDialogText = "Open here in &Conhost"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuDialogText = "Open &here"') | Should -BeTrue
         $content.Contains('ExplorerContextSubMenuTerminalDialogText = "Open here in &Terminal"') | Should -BeTrue
         $content.Contains('ExplorerContextSubMenuNoProfileDialogText = "Open here with &No Profile"') | Should -BeTrue
         $content.Contains('ExplorerContextSubMenuCustomProfileDialogText = "Open here with C&ustom Profile"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuTerminalElevatedDialogText = "Open here in Terminal as A&dministrator"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuNoProfileElevatedDialogText = "Open here with No Profile as Adm&inistrator"') | Should -BeTrue
+        $content.Contains('ExplorerContextSubMenuCustomProfileElevatedDialogText = "Open here with Custom Profile as Admi&nistrator"') | Should -BeTrue
         $content.Contains('\shell\openterminal\command') | Should -BeTrue
         $content.Contains('\shell\opennoprofile\command') | Should -BeTrue
         $content.Contains('\shell\opencustomprofile\command') | Should -BeTrue
+        $content.Contains('\shell\runasterminal\command') | Should -BeTrue
+        $content.Contains('\shell\runasnoprofile\command') | Should -BeTrue
+        $content.Contains('\shell\runascustomprofile\command') | Should -BeTrue
         $content.Contains('wt.exe -d') | Should -BeTrue
         $content.Contains('-NoProfile -NoExit') | Should -BeTrue
         $content.Contains('$PROFILE.CurrentUserCurrentHost') | Should -BeTrue
