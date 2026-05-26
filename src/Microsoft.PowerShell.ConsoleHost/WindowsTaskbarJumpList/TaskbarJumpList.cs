@@ -110,7 +110,10 @@ namespace Microsoft.PowerShell
                         (ConsoleHostStrings.OpenInTerminal, terminalPath, $"-w 0 nt \"{cmdPath}\"", false),
                         (ConsoleHostStrings.OpenWithNoProfile, cmdPath, "-NoProfile", false),
                         (ConsoleHostStrings.OpenWithCustomProfile, cmdPath, "-NoProfile -Command \"if (Test-Path $PROFILE.CurrentUserCurrentHost) { . $PROFILE.CurrentUserCurrentHost }\"", false),
-                        (ConsoleHostStrings.RunAsAdministrator, cmdPath, string.Empty, true),
+                        (ConsoleHostStrings.OpenInConhostAsAdministrator, cmdPath, string.Empty, true),
+                        (ConsoleHostStrings.OpenInTerminalAsAdministrator, terminalPath, $"-w 0 nt \"{cmdPath}\"", true),
+                        (ConsoleHostStrings.OpenWithNoProfileAsAdministrator, cmdPath, "-NoProfile", true),
+                        (ConsoleHostStrings.OpenWithCustomProfileAsAdministrator, cmdPath, "-NoProfile -Command \"if (Test-Path $PROFILE.CurrentUserCurrentHost) { . $PROFILE.CurrentUserCurrentHost }\"", true),
                     };
 
                     uint addedEntries = 0;
@@ -121,7 +124,7 @@ namespace Microsoft.PowerShell
                             break;
                         }
 
-                        if (entry.Title == ConsoleHostStrings.OpenInTerminal && !File.Exists(entry.ExecutablePath))
+                        if (entry.ExecutablePath == terminalPath && !File.Exists(entry.ExecutablePath))
                         {
                             continue;
                         }
