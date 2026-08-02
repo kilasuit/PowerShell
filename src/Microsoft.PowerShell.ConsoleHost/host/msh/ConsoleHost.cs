@@ -1917,6 +1917,28 @@ namespace Microsoft.PowerShell
                         currentUserProfile,
                         currentUserHostSpecificProfile));
 
+                // If -minprofilescriptpath is specified we imply the -noprofile option, skipping all profiles & run the supplie minimal profile script.
+
+                if (s_cpp.MinProfileScriptPath != null)
+                {
+                    args.SkipProfiles = true;
+                    s_tracer.WriteLine("-minprofile option specified: skipping all other profiles");
+
+                    // Run the minimal profile script.
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    RunMinProfileScript(s_cpp.MinProfileScriptPath, exec);
+                    sw.Stop();
+
+                    var profileLoadTimeInMs = sw.ElapsedMilliseconds;
+                    if (s_cpp.ShowBanner && !s_cpp.NoProfileLoadTime)
+                    {
+                        Console.Error.WriteLine("Skipped all other profiles and ran the minimal profile script: {0}", s_cpp.MinProfileScriptPath);
+                        Console.Error.WriteLine("Minimum Profile Script Loading time: {0} ms", profileLoadTimeInMs);
+                    }
+                    _profileLoadTimeInMS = profileLoadTimeInMs;
+                }
+
                 if (!args.SkipProfiles)
                 {
                     // Run the profiles.
@@ -1942,6 +1964,7 @@ namespace Microsoft.PowerShell
 
                     _profileLoadTimeInMS = profileLoadTimeInMs;
                 }
+
                 else
                 {
                     s_tracer.WriteLine("-noprofile option specified: skipping profiles");
@@ -2116,6 +2139,35 @@ namespace Microsoft.PowerShell
                     ReportException(e, exec);
 
                     s_runspaceInitTracer.WriteLine("Could not load profile.");
+                }
+            }
+        }
+
+        private void RunMinProfileScript(string minProfileScriptPath, Executor exec)
+        {
+            if (!string.IsNullOrEmpty(minProfileScriptPath))
+            {
+                s_runspaceInitTracer.WriteLine("checking min profile script" + minProfileScriptPath);
+
+                try
+                {
+                    if (File.Exists(minProfileScriptPath))
+                    {
+                        InitializeRunspaceHelper(
+                            ". '" + EscapeSingleQuotes(minProfileScriptPath) + "'",
+                            exec,
+                            Executor.ExecutionOptions.AddOutputter);
+                    }
+                    else
+                    {
+                        s_runspaceInitTracer.WriteLine("min profile script file not found");
+                    }
+                }
+                catch (Exception e) // Catch-all OK, 3rd party callout
+                {
+                    ReportException(e, exec);
+
+                    s_runspaceInitTracer.WriteLine("Could not load min profile script.");
                 }
             }
         }

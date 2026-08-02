@@ -183,6 +183,7 @@ namespace Microsoft.PowerShell
             "help",
             "inputformat",
             "login",
+            "minprofilescriptpath",
             "noexit",
             "nologo",
             "noninteractive",
@@ -204,48 +205,49 @@ namespace Microsoft.PowerShell
         [Flags]
         internal enum ParameterBitmap : long
         {
-            Command             = 0x0000000000000001, // -Command | -c
-            ConfigurationName   = 0x0000000000000002, // -ConfigurationName | -config
-            CustomPipeName      = 0x0000000000000004, // -CustomPipeName
-            EncodedCommand      = 0x0000000000000008, // -EncodedCommand | -e | -ec
-            EncodedArgument     = 0x0000000000000010, // -EncodedArgument
-            ExecutionPolicy     = 0x0000000000000020, // -ExecutionPolicy | -ex | -ep
-            File                = 0x0000000000000040, // -File | -f
-            Help                = 0x0000000000000080, // -Help, -?, /?
-            InputFormat         = 0x0000000000000100, // -InputFormat | -inp | -if
-            Interactive         = 0x0000000000000200, // -Interactive | -i
-            Login               = 0x0000000000000400, // -Login | -l
-            MTA                 = 0x0000000000000800, // -MTA
-            NoExit              = 0x0000000000001000, // -NoExit | -noe
-            NoLogo              = 0x0000000000002000, // -NoLogo | -nol
-            NonInteractive      = 0x0000000000004000, // -NonInteractive | -noni
-            NoProfile           = 0x0000000000008000, // -NoProfile | -nop
-            OutputFormat        = 0x0000000000010000, // -OutputFormat | -o | -of
-            SettingsFile        = 0x0000000000020000, // -SettingsFile | -settings
-            SSHServerMode       = 0x0000000000040000, // -SSHServerMode | -sshs
-            SocketServerMode    = 0x0000000000080000, // -SocketServerMode | -sockets
-            ServerMode          = 0x0000000000100000, // -ServerMode | -server
+            Command = 0x0000000000000001, // -Command | -c
+            ConfigurationName = 0x0000000000000002, // -ConfigurationName | -config
+            CustomPipeName = 0x0000000000000004, // -CustomPipeName
+            EncodedCommand = 0x0000000000000008, // -EncodedCommand | -e | -ec
+            EncodedArgument = 0x0000000000000010, // -EncodedArgument
+            ExecutionPolicy = 0x0000000000000020, // -ExecutionPolicy | -ex | -ep
+            File = 0x0000000000000040, // -File | -f
+            Help = 0x0000000000000080, // -Help, -?, /?
+            InputFormat = 0x0000000000000100, // -InputFormat | -inp | -if
+            Interactive = 0x0000000000000200, // -Interactive | -i
+            Login = 0x0000000000000400, // -Login | -l
+            MTA = 0x0000000000000800, // -MTA
+            MinProfileScript = 0x0000000000000900, // -MinProfileScript | -minprofile 
+            NoExit = 0x0000000000001000, // -NoExit | -noe
+            NoLogo = 0x0000000000002000, // -NoLogo | -nol
+            NonInteractive = 0x0000000000004000, // -NonInteractive | -noni
+            NoProfile = 0x0000000000008000, // -NoProfile | -nop
+            OutputFormat = 0x0000000000010000, // -OutputFormat | -o | -of
+            SettingsFile = 0x0000000000020000, // -SettingsFile | -settings
+            SSHServerMode = 0x0000000000040000, // -SSHServerMode | -sshs
+            SocketServerMode = 0x0000000000080000, // -SocketServerMode | -sockets
+            ServerMode = 0x0000000000100000, // -ServerMode | -server
             NamedPipeServerMode = 0x0000000000200000, // -NamedPipeServerMode | -namedpipes
-            STA                 = 0x0000000000400000, // -STA
-            Version             = 0x0000000000800000, // -Version | -v
-            WindowStyle         = 0x0000000001000000, // -WindowStyle | -w
-            WorkingDirectory    = 0x0000000002000000, // -WorkingDirectory | -wd
-            ConfigurationFile   = 0x0000000004000000, // -ConfigurationFile
-            NoProfileLoadTime   = 0x0000000008000000, // -NoProfileLoadTime
-            CommandWithArgs     = 0x0000000010000000, // -CommandWithArgs | -cwa
+            STA = 0x0000000000400000, // -STA
+            Version = 0x0000000000800000, // -Version | -v
+            WindowStyle = 0x0000000001000000, // -WindowStyle | -w
+            WorkingDirectory = 0x0000000002000000, // -WorkingDirectory | -wd
+            ConfigurationFile = 0x0000000004000000, // -ConfigurationFile
+            NoProfileLoadTime = 0x0000000008000000, // -NoProfileLoadTime
+            CommandWithArgs = 0x0000000010000000, // -CommandWithArgs | -cwa
 
             // Enum values for specified ExecutionPolicy
-            EPUnrestricted      = 0x0000000100000000, // ExecutionPolicy unrestricted
-            EPRemoteSigned      = 0x0000000200000000, // ExecutionPolicy remote signed
-            EPAllSigned         = 0x0000000400000000, // ExecutionPolicy all signed
-            EPRestricted        = 0x0000000800000000, // ExecutionPolicy restricted
-            EPDefault           = 0x0000001000000000, // ExecutionPolicy default
-            EPBypass            = 0x0000002000000000, // ExecutionPolicy bypass
-            EPUndefined         = 0x0000004000000000, // ExecutionPolicy undefined
-            EPIncorrect         = 0x0000008000000000, // ExecutionPolicy incorrect
+            EPUnrestricted = 0x0000000100000000, // ExecutionPolicy unrestricted
+            EPRemoteSigned = 0x0000000200000000, // ExecutionPolicy remote signed
+            EPAllSigned = 0x0000000400000000, // ExecutionPolicy all signed
+            EPRestricted = 0x0000000800000000, // ExecutionPolicy restricted
+            EPDefault = 0x0000001000000000, // ExecutionPolicy default
+            EPBypass = 0x0000002000000000, // ExecutionPolicy bypass
+            EPUndefined = 0x0000004000000000, // ExecutionPolicy undefined
+            EPIncorrect = 0x0000008000000000, // ExecutionPolicy incorrect
 
             // V2 Socket Server Mode
-            V2SocketServerMode  = 0x0000100000000000, // -V2SocketServerMode | -v2so
+            V2SocketServerMode = 0x0000100000000000, // -V2SocketServerMode | -v2so
         }
 #pragma warning restore SA1025 // CodeMustNotContainMultipleWhitespaceInARow
 
@@ -533,6 +535,15 @@ namespace Microsoft.PowerShell
             {
                 AssertArgumentsParsed();
                 return _file;
+            }
+        }
+
+        internal string? MinProfileScriptPath
+        {
+            get
+            {
+                AssertArgumentsParsed();
+                return _minProfileScriptPath;
             }
         }
 
@@ -1098,6 +1109,19 @@ namespace Microsoft.PowerShell
 
                     ParametersUsed |= ParameterBitmap.File;
                 }
+                else if (MatchSwitch(switchKey, "minprofilescriptpath", "minprofile")) 
+                {
+                    _minProfileScriptPath = args[++i];
+                    noexitSeen = true;
+                    if (!ParseMinProfileScriptFile(_minProfileScriptPath, ref i, noexitSeen))
+                    {
+                        break;
+                    }
+
+                    ParametersUsed |= ParameterBitmap.MinProfileScript;
+                    ParametersUsed |= ParameterBitmap.NoProfile;
+                    ParametersUsed |= ParameterBitmap.NoExit;
+                }
 #if DEBUG
                 else if (MatchSwitch(switchKey, "isswait", "isswait"))
                 {
@@ -1436,6 +1460,48 @@ namespace Microsoft.PowerShell
             return true;
         }
 
+        // Process MinProfile script execution. We don't need to worry about checking -command
+        // since if -command comes before -file, -file will be treated as part
+        // of the script to evaluate. If -file comes before -command, it will
+        // treat -command as an argument to the script...
+        private bool ParseMinProfileScriptFile(string args, ref int i, bool noexitSeen)
+        {
+            // Exit on script completion unless -noexit was specified...
+
+            // We need to get the full path to the MinProfileScript because it will be
+            // executed instead of default profiles.
+            try
+            {
+                _file = NormalizeFilePath(args);
+            }
+            catch (Exception e)
+            {
+                // Catch all exceptions - we're just going to exit anyway so there's
+                // no issue of the system being destabilized.
+                SetCommandLineError(
+                    string.Format(CultureInfo.CurrentCulture, CommandLineParameterParserStrings.InvalidFileArgument, args, e.Message),
+                    showBanner: false);
+                return false;
+            }
+
+            if (!System.IO.File.Exists(_file))
+            {
+                SetCommandLineError(
+                    string.Format("MinProfile script file does not exist: {0}", args),
+                    showHelp: true);
+                return false;
+            }
+#if !UNIX
+            // Only do the .ps1 extension check on Windows since shebang is not supported
+            if (!_file.EndsWith(".ps1", StringComparison.OrdinalIgnoreCase))
+            {
+                SetCommandLineError(string.Format(CultureInfo.CurrentCulture, CommandLineParameterParserStrings.InvalidFileArgumentExtension, args[i]));
+                return false;
+            }
+#endif
+            return true;
+        }
+
         private void CollectPSArgs(string[] args, ref int i)
         {
             // Try parse '$true', 'true', '$false' and 'false' values.
@@ -1634,6 +1700,7 @@ namespace Microsoft.PowerShell
         private Serialization.DataFormat _inFormat = Serialization.DataFormat.Text;
         private readonly Collection<CommandParameter> _collectedArgs = new Collection<CommandParameter>();
         private string? _file;
+        private string? _minProfileScriptPath;
         private string? _executionPolicy;
         private string? _settingsFile;
         private string? _workingDirectory;
