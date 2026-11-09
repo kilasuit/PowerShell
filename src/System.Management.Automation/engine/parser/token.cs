@@ -591,6 +591,9 @@ namespace System.Management.Automation.Language
         /// <summary>The 'clean' keyword.</summary>
         Clean = 170,
 
+        /// <summary>The ThreadJob background operator '&!'.</summary>
+        AmpersandExclaim = 171,
+
         #endregion Keywords
     }
 
@@ -952,6 +955,7 @@ namespace System.Management.Automation.Language
             /*                 Base */ TokenFlags.Keyword,
             /*              Default */ TokenFlags.Keyword,
             /*                Clean */ TokenFlags.Keyword | TokenFlags.ScriptBlockBlockName,
+            /*     AmpersandExclaim */ TokenFlags.SpecialOperator | TokenFlags.ParseModeInvariant,
 
             #endregion Flags for keywords
         };
@@ -1152,6 +1156,7 @@ namespace System.Management.Automation.Language
             /*                 Base */ "base",
             /*              Default */ "default",
             /*                Clean */ "clean",
+            /*     AmpersandExclaim */ "&!",
 
             #endregion Text for keywords
         };
